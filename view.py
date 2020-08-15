@@ -1,10 +1,11 @@
 import tkinter as tk
+import utility as vu
 from tkinter import ttk
 from tkinter import *
 from tkinter.filedialog import asksaveasfile, asksaveasfilename
 from vNode import VNode
 from vArrow import VArrow
-import utility as vu
+from controller import *
 
 class View: # create view class
     def __init__(self, parent): # initialisat° class/object
@@ -27,6 +28,8 @@ class View: # create view class
         self.lastx = 0
         self.lasty = 0
 
+        self.listFlatVNode = []
+
     def createArrows(self):
         for i in range(0, len(self.listVNode)): # listVnode contains all the node created, thes vnodes ar 2)d list
             for j in self.listVNode[i]: # get nodes from layer
@@ -39,18 +42,33 @@ class View: # create view class
                         # give node the reference of its arrows left and right
                         q.addLeftArrow(vArrow) # link from node
                         j.addRightArrow(vArrow)
-                        # give arrow the reference ti its node
+                        # give arrow the reference of its node
                         vArrow.leftNode = j
                         vArrow.rightNode = q
                         # append all arrows to a list
                         self.listVArrow.append(vArrow)
         return
-    def flattenListVnode(self):
-        return
+
+    def flattenListVNode(self):
+        self.listFlatVNode.clear()
+        for layer in range(1, self.listVNode.__len__()):
+            for n in self.listVNode[layer]:
+                self.listFlatVNode.append(n)
+
     def setupControlNetwork(self):
-        return
+        self.controller.numInput = len(self.listInputNode) # tell controller how many input nodes
+        self.controller.numOutput = len(self.listOutputNode) # tell controller how many output nodes
+        
+        # tell controller how many hidden layer an nodes
+        for i in range(len(self.listComboBox)):
+            j = int(self.listComboBox[i].get())
+            if j != 0:
+                self.controller.numOfHLayers.append(j)
+        # we need to pass these info, is for communicating with controller by using a flattened list
+
     def randomNum(self):
-        return
+        self.controller.randomWeight(self.listVNode)
+        self.controller.randomBiais(self.listVNode)
 
 
     def setup(self): # run firts
@@ -98,9 +116,9 @@ class View: # create view class
         self.lab9refreshrate = tk.Label(self.leftFrame, text = "Refresh rate(epoch)")
         self.combo8refreshrate = ttk.Combobox(self.leftFrame, values = [2, 100, 200, 300, 500, 1000, 2000, 3000])
 
-        self.b8LoadFeature = tk.Button(self.leftFrame, text = "Laod Features", command = self.loadTrainFeature, width = 20, height = 1)
+        self.b8LoadFeature = tk.Button(self.leftFrame, text = "Load Features", command = self.loadTrainFeature, width = 20, height = 1)
 
-        self.b9LoadLabel = tk.Button(self.leftFrame, text = "Laod Labels", command = self.loadTrainLabel, width = 20, height = 1)
+        self.b9LoadLabel = tk.Button(self.leftFrame, text = "Load Labels", command = self.loadTrainLabel, width = 20, height = 1)
 
         self.b10StartTrain = tk.Button(self.leftFrame, text = "Start Training", command = self.StartTrain, width = 20, height = 1)
         # / training section
@@ -254,7 +272,7 @@ class View: # create view class
                 listComboGet.append(cb.get()) # listComboGet is a local variable
         # Step 1 get total columns/layers of the network and get position
         j = 0 # index for current layer
-        for i in listComboGet: # go trough combo boxes values, wher 0s have been removed
+        for i in listComboGet: # go trough combo boxes values, where 0 have been removed
             j =j + 1 # layer index
             listNodeCoord = vu.getNodePosition(len(listComboGet), int(i), j) # get node position
             listLayer = [] # a list tokeep nodes in one layer
@@ -273,9 +291,9 @@ class View: # create view class
             self.listVNode.append(listLayer)
         
         self.createArrows() # create arrows to link nodes
-        # self.flattenListVnode() # list is for data transfert from backend neural network
-        # self.setupControlNetwork() # setup back end neural network
-        # self.randomNum() # generate random weights and biais
+        self.flattenListVNode() # list is for data transfert from backend neural network
+        self.setupControlNetwork() # setup back end neural network
+        self.randomNum() # generate random weights and biais
 
         # set flag as true
         self.flagNetworkCreated = True
@@ -291,23 +309,31 @@ class View: # create view class
 
     def loadTrainFeature(self):
         return
+
     def loadTrainLabel(self):
         return
+
     def StartTrain(self):
         return
+
     def saveNN(self):
         return
+
     def loadNN(self):
         return
+
     def loadPreFeature(self):
         return
+
     def startPredict(self):
         return
+
     # def createNodes(self):
         # return
     def clicked(self, event):
         self.clickedid = event.widget.find_withtag('current')[0] # get id of clicked item
         self.lastx, self.lasty = event.x, event.y # update item x and w
+
     def drag(self, event):
         for column in self.listVNode: # go through node layer
             for n in column:
@@ -316,15 +342,13 @@ class View: # create view class
                     self.lastx = event.x # update last item position
                     self.lasty = event.y
 
+    def setController(self, con): # set link to controller
+        self.controller = con  
 
-# test view
-if __name__ == "__main__":
-    mainwin = Tk()
-    WIDTH = vu.windowWight
-    HEIGHT = vu.windowHeight
-    mainwin.geometry("%sx%s" % (WIDTH, HEIGHT))
-    mainwin.title("view testing")
+    def updateBiais(self, controlFlatBiaisList):
+        for i in range(0, controlFlatBiaisList.__len__()):
+            self.listFlatVNode[i].updateBiais(controlFlatBiaisList[i]) # call vnode update biais
 
-    view = View(mainwin)
-    view.setup()
-    mainwin.mainloop()
+    def updateWeight(self, controlFlatWeightList): # 1d list
+        for i in range(0, controlFlatWeightList.__len__()):
+            self.listVArrow[i].updateWeight(controlFlatWeightList[i])

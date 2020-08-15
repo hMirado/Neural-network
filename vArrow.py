@@ -31,3 +31,11 @@ class VArrow(object):
         self.canvas.coords(self.aid, self.startX, self.startY, self.endX, self.endY)
         self.updatePoints() # recalculate element points
         self.canvas.coords(self.tid, self.textX, self.textY) # move text 
+
+    def updateWeight(self, w):
+        self.weight = w
+        self.canvas.itemconfig(self.tid, text = "W: " + str(self.weight))
+        if (0 >= float(w)):
+            self.canvas.itemconfig(self.tid, fill = "green")
+        else:
+            self.canvas.itemconfig(self.tid, fill = "red")

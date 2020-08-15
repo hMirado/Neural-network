@@ -97,3 +97,11 @@ class VNode:
             la.movePtRight(self.leftX, self.leftY) # move arrow right end
         for ra in self.rightArrow: # right arrow
             ra.movePtLeft(self.rightX, self.rightY) # move arrow left end
+
+    def updateBiais(self, b):
+        self.biais = b
+        self.canvas.itemconfig(self.tidbias, text = "B:" + str(self.biais)) # update text content on canvas
+        if (0 >= float(b)): # we want to see 2 colours, >0 in green , <=0 in red
+            self.canvas.itemconfig(self.tidbias, fill = "green")
+        else:
+            self.canvas.itemconfig(self.tidbias, fill = "red")
