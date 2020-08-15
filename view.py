@@ -24,6 +24,9 @@ class View: # create view class
         self.trainLabelPath = ""
         self.controller = None
 
+        self.lastx = 0
+        self.lasty = 0
+
     def createArrows(self):
         for i in range(0, len(self.listVNode)): # listVnode contains all the node created, thes vnodes ar 2)d list
             for j in self.listVNode[i]: # get nodes from layer
@@ -120,6 +123,11 @@ class View: # create view class
 
         # MID FRAME
         self.c = Canvas(self.midFrame, bg = "white", width = vu.canvasWidth, height = vu.canvasHeight)
+
+        # bind actions
+        self.c.tag_bind("drag", "<Button-1>", self.clicked) # click
+        self.c.tag_bind("drag", "<B1-Motion>", self.drag) # drag 
+
         # / MID FRAME
 
 
@@ -297,6 +305,16 @@ class View: # create view class
         return
     # def createNodes(self):
         # return
+    def clicked(self, event):
+        self.clickedid = event.widget.find_withtag('current')[0] # get id of clicked item
+        self.lastx, self.lasty = event.x, event.y # update item x and w
+    def drag(self, event):
+        for column in self.listVNode: # go through node layer
+            for n in column:
+                if n.containAny(self.clickedid): # if node contains click id
+                    n.move(event.x - self.lastx, event.y - self.lasty) # move grouped item
+                    self.lastx = event.x # update last item position
+                    self.lasty = event.y
 
 
 # test view

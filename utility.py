@@ -3,7 +3,7 @@
 canvasWidth = 1000
 canvasHeight = 770
 windowHeight = 800
-windowWight = 1400
+windowWight = 1600
 networkOffset = -100
 nodeWidth = 50
 nodeHeight = 50

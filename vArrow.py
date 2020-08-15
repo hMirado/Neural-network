@@ -19,3 +19,15 @@ class VArrow(object):
     def updatePoints(self):
         self.textX = (self.startX + self.endX) / 2
         self.textY = (self.startY + self.endY) / 2
+
+    def movePtLeft(self, x, y):
+        self.startX, self.startY = x, y
+        self.canvas.coords(self.aid, self.startX, self.startY, self.endX, self.endY)
+        self.updatePoints() # recalculate element points
+        self.canvas.coords(self.tid, self.textX, self.textY) # move text
+
+    def movePtRight(self, x, y):
+        self.endX, self.endY = x, y
+        self.canvas.coords(self.aid, self.startX, self.startY, self.endX, self.endY)
+        self.updatePoints() # recalculate element points
+        self.canvas.coords(self.tid, self.textX, self.textY) # move text 

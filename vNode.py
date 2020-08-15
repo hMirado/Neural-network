@@ -55,3 +55,45 @@ class VNode:
     
     def addRightArrow(self, ra):
         self.rightArrow.append(ra)
+
+    def containAny(self, id): # check if node contains cliked item 
+        if id == self.stardId: # the start point
+            return True
+        elif id == self.endId:
+            return True
+        elif id == self.cid: # circle
+            return True
+        elif id == self.tidbias:
+            return True
+        elif id == self.tidValue:
+            return True
+        else:
+            return False
+
+    def move(self, x, y):
+        # remove elements
+        self.canvas.move(self.cid, x, y)
+        self.canvas.move(self.stardId, x, y)
+        self.canvas.move(self.endId, x, y)
+        self.canvas.move(self.tidbias, x, y)
+        self.canvas.move(self.tidValue, x, y)
+
+        # update current position
+        self.startX += x
+        self.startY += y
+        self.endX += x
+        self.endY += y
+        self.updatePoints()
+
+        # arrange display orders
+        self.canvas.tag_raise(self.cid)
+        self.canvas.tag_raise(self.stardId)
+        self.canvas.tag_raise(self.endId)
+        self.canvas.tag_raise(self.tidbias)
+        self.canvas.tag_raise(self.tidValue)
+
+        # move arrows
+        for la in self.leftArrow: # left arrow
+            la.movePtRight(self.leftX, self.leftY) # move arrow right end
+        for ra in self.rightArrow: # right arrow
+            ra.movePtLeft(self.rightX, self.rightY) # move arrow left end
