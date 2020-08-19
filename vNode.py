@@ -105,3 +105,8 @@ class VNode:
             self.canvas.itemconfig(self.tidbias, fill = "green")
         else:
             self.canvas.itemconfig(self.tidbias, fill = "red")
+
+    #update Value
+    def updateValue(self,v):
+        self.value=v
+        self.canvas.itemconfig(self.tidValue, text="V: "+str(self.value))

@@ -2,7 +2,8 @@ import tkinter as tk
 import utility as vu
 from tkinter import ttk
 from tkinter import *
-from tkinter.filedialog import asksaveasfile, asksaveasfilename
+from tkinter.filedialog import asksaveasfile, asksaveasfilename, askopenfilename
+from tkinter import  messagebox
 from vNode import VNode
 from vArrow import VArrow
 from controller import *
@@ -24,11 +25,15 @@ class View: # create view class
         self.trainFeaturePath = ""
         self.trainLabelPath = ""
         self.controller = None
-
+        self.listFlatVNode = []
         self.lastx = 0
         self.lasty = 0
 
-        self.listFlatVNode = []
+        self.flagLoadTrainFeature = False
+        self.flagLoadTrainLabel = False
+
+        self.trainLabelPath = "" # to store training label file
+        self.trainFeaturePath = ""
 
     def createArrows(self):
         for i in range(0, len(self.listVNode)): # listVnode contains all the node created, thes vnodes ar 2)d list
@@ -86,17 +91,17 @@ class View: # create view class
         self.rightFrame1 = Frame(self.rightFrame) # right top frame
         self.rightFrame2 = Frame(self.rightFrame) # right bootom sub frame
 
-        self.statusbar = tk.Label(self.midFrame, text = "On the way ...", bd = 1, relief = tk.SUNKEN, anchor = tk.W, fg = "red")
+        self.statusbar = tk.Label(self.midFrame, text = "On the way ...", bd = 1, relief = tk.SUNKEN, anchor = tk.W, fg = "red", width = 100)
 
         self.lab1input = tk.Label(self.leftFrame, text = "Input layer")
-        self.combo1input = ttk.Combobox(self.leftFrame, values = [1, 2, 3, 4])
+        self.combo1input = ttk.Combobox(self.leftFrame, values = [1, 2, 3, 4, 5, 6, 7])
 
         self.lab2layer1 = tk.Label(self.leftFrame, text = "Mid layer 1")
-        self.combo2layer1 = ttk.Combobox(self.leftFrame, values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        self.combo2layer1 = ttk.Combobox(self.leftFrame, values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         self.lab3layer2 = tk.Label(self.leftFrame, text = "Mid layer 2")
-        self.combo3layer2 = ttk.Combobox(self.leftFrame, values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        self.combo3layer2 = ttk.Combobox(self.leftFrame, values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         self.lab4layer3 = tk.Label(self.leftFrame, text = "Mid layer 3")
-        self.combo4layer3 = ttk.Combobox(self.leftFrame, values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        self.combo4layer3 = ttk.Combobox(self.leftFrame, values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         self.lab5output = tk.Label(self.leftFrame, text = "Output layer")
         self.combo5output = ttk.Combobox(self.leftFrame, values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
@@ -236,7 +241,7 @@ class View: # create view class
         self.statusbar.pack(side = tk.BOTTOM, fill = tk.Y)
 
         # set default values to combo input boxes
-        self.combo1input.current(1)
+        self.combo1input.current(2)
         self.combo2layer1.current(3)
         self.combo3layer2.current(0)
         self.combo4layer3.current(0)
@@ -253,9 +258,14 @@ class View: # create view class
     def clear(self): # clear methode
         self.c.delete("all")
         self.listVArrow.clear()
+        self.lastx = 0
+        self.lasty = 0
+        self.listVArrow.clear()
         self.listVNode.clear()
         self.listInputNode.clear()
         self.listOutputNode.clear()
+        self.listFlatVNode.clear
+        self.controller.clear()
 
         return
 
@@ -272,16 +282,19 @@ class View: # create view class
                 listComboGet.append(cb.get()) # listComboGet is a local variable
         # Step 1 get total columns/layers of the network and get position
         j = 0 # index for current layer
+        #index=0
+
         for i in listComboGet: # go trough combo boxes values, where 0 have been removed
-            j =j + 1 # layer index
+            j += 1 # layer index
             listNodeCoord = vu.getNodePosition(len(listComboGet), int(i), j) # get node position
             listLayer = [] # a list tokeep nodes in one layer
+            #index+=1
 
             # create nodes based on coordinations
             for c1 in listNodeCoord:
                 vNode = VNode() # create single node, node is separate class
                 vNode.create(self.c, c1[0], c1[1]) # create node in possition
-                if j ==  i: # inpute node
+                if j ==  1: # inpute node
                     vNode.what = "input" # set node type to input
                     self.listInputNode.append(vNode) # keep input node in a separate list
                 elif j == listComboGet.__len__(): # node with output
@@ -302,19 +315,48 @@ class View: # create view class
         # reload train feature and label if they have been loade before
         if self.controller.flagTrainFeatureLoad:
             self.controller.loadTrainFeature(self.trainFeaturePath)
-        if self.controller.flageTrainLabelLoad:
+        if self.controller.flagTrainLabelLoad:
             self.controller.loadTrainLabel(self.trainLabelPath)
 
 
-
     def loadTrainFeature(self):
-        return
+        if self.flagNetworkCreated == False: # check if a network already created
+            tk.messagebox.showinfo(title = "Error", message = "Please create network first")
+        else:
+            self.trainFeaturePath = ""
+            self.trainFeaturePath = askopenfilename(
+                                        initialdir = "./",
+                                        filetypes = [("Text file", "*.txt"), ("All files", "*.*")],
+                                        title = "Choose a file"
+                                    ) # get file path
+            self.controller.loadTrainFeature(self.trainFeaturePath)
 
     def loadTrainLabel(self):
-        return
+        if self.controller.flagTrainFeatureLoad == False:
+            tk.messagebox.showinfo(title = "Error", message = "Please create network and load train feature set first")
+        else:
+            self.trainLabelPath = ""
+            self.trainLabelPath = askopenfilename(
+                                        initialdir = "./",
+                                        filetypes = [("Text file", "*.txt"), ("All files", "*.*")],
+                                        title = "Choose a file"
+                                    )
+            self.controller.loadTrainLabel(self.trainLabelPath)
+
+    def clearInputValue(self):
+        for n in self.listInputNode:
+            n.updateValue(0.0)
 
     def StartTrain(self):
-        return
+        if self.controller.flagTrainLabelLoad == False: # check if data file loaded
+            # if no network or file loaded, remind user
+            tk.messagebox.showinfo(title = "Error", message = "Please create network and load train feature and label first")
+        else:
+            self.b10StartTrain["state"] = DISABLED # disable train button
+            self.statusbar["text"] = "Training ...."
+            self.controller.startTrain()
+            self.b10StartTrain["state"] = NORMAL # after training
+            self.flagNetworkTrained = True
 
     def saveNN(self):
         return
@@ -328,8 +370,7 @@ class View: # create view class
     def startPredict(self):
         return
 
-    # def createNodes(self):
-        # return
+
     def clicked(self, event):
         self.clickedid = event.widget.find_withtag('current')[0] # get id of clicked item
         self.lastx, self.lasty = event.x, event.y # update item x and w
@@ -352,3 +393,7 @@ class View: # create view class
     def updateWeight(self, controlFlatWeightList): # 1d list
         for i in range(0, controlFlatWeightList.__len__()):
             self.listVArrow[i].updateWeight(controlFlatWeightList[i])
+
+    # def setInputValue(self, setV):
+    #     for i in range(0, setV.__len__()):
+    #         self.listInputNode[i].updateValue(setV[i])
